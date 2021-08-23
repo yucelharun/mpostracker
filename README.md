@@ -1,2 +1,2 @@
 # mPosTracker
-Automated tracking software for colloidal mixture
+Toolbox for tracking and analyzing crowded mixture of colloidal particles
