@@ -1,36 +1,36 @@
-% This code is written by Harun, 2018
+% This code is written by Harun, 2021
 classdef PosFinder
     properties
-        imFull = 0;
-        th = 128;
-        L = 20;
-        CamSize = 0;
-        X = 0;
-        Y= 0;
-        dx = 0;
-        dy = 0;
-        temp = 0;
-        bw = 0
-        bwl = 0; 
-        partnum =0;
-        tA = 0;
-        tI = 0;
-        tR = 0;
+        imFull = 0; %The image under consideration
+        th = 128; %Therahold value
+        L = 20; %Red Area Parameter, Ignoring side of border of the image
+        CamSize = 0; %Image size
+        X = 0; % X coordinates of the image
+        Y= 0; % Y coordinates of the image
+        dx = 0; %x component of image gradient vector
+        dy = 0; %y component of image gradient vector
+        temp = 0; %Temporary memory
+        bw = 0; %Binary image
+        bwl = 0; %Binary image
+        partnum =0; %detected particle number
+        tA = 0; %Active area size of the particles
+        tI = 0; %Average intensity value within active area
+        tR = 0; %
 
-        dCent = 0;
-        bins = 100;
-        avg = 0;
-        caltime = 0;
+        dCent = 0; %(x,y) coordinates of the particles
+        bins = 100; %bins for histogram
+        avg = 0; %avg value for thresholding
+        caltime = 0; %calculation time
         
-        CalcMethod = 1;
-        Rout = 0;
-        mask = 0;
+        CalcMethod = 1; %Calculation method
+        Rout = 0; %Calulation parameter
+        mask = 0; %Combination of binary images
         
-        success = 0;
+        success = 0; %Logical for calculation
         
     end
     methods
-        function obj = PosFinder(im, ht, ll, met, ro)
+        function obj = PosFinder(im, ht, ll, met, ro) %Main class function 
             obj.imFull = im;
             obj.CamSize = size(obj.imFull);
             obj.avg = mean(obj.imFull(:));
@@ -51,10 +51,10 @@ classdef PosFinder
             obj.success = 1;
 
         end
-        function disp_caltime(obj)
+        function disp_caltime(obj) %Display time on the panel
             disp(['Elapsed time is ' num2str(obj.caltime)]);
         end
-        function show_image(obj)
+        function show_image(obj) %Show image for command line version
             image(obj.imFull), colormap(gray(256))
             title('Image and Positions')
             hold on
@@ -64,7 +64,7 @@ classdef PosFinder
             hold off
             drawnow;
         end
-        function show_imgradients(obj)
+        function show_imgradients(obj) %Show image gradients for command line version
             image(obj.imFull+obj.mask*50), colormap(gray(256))
             title('Image Gradients and Positions')
             hold on
@@ -75,12 +75,12 @@ classdef PosFinder
             hold off
             drawnow;
         end
-        function show_bw(obj)
+        function show_bw(obj) %Show binary image for command line version
             figure, image(obj.bw*255), colormap(gray(256))
             axis equal
             drawnow;
         end
-        function show_mask(obj)
+        function show_mask(obj) %Show result mask for command line version
             if obj.mask ~= 0 
             figure, image(obj.mask*255), colormap(gray(256))
             axis equal
@@ -89,21 +89,21 @@ classdef PosFinder
                 warning('The mask is zero. mask is calculated for method 3')
             end
         end
-        function hist_tA(obj)
+        function hist_tA(obj) %Calculation tA parameter
             [counts,vals] = hist(obj.tA,obj.bins);
             figure, plot(vals,counts,'k*')
             drawnow;
         end
-        function hist_tI(obj)
+        function hist_tI(obj) %Calculation tI parameter
             [counts,vals] = hist(obj.tI,obj.bins);
             figure, plot(vals,counts,'k*')
             drawnow;
         end
-        function hist_im(obj)
+        function hist_im(obj) %Show histogram for command line version
             figure, imhist(obj.imFull/255)
             drawnow;
         end
-        function show_panel(obj)
+        function show_panel(obj) %Show graphical panel for command line version
             subplot(2,2,1)
                 image(obj.imFull), colormap(gray(256))
                 title('Image and Positions')
@@ -130,7 +130,7 @@ classdef PosFinder
         end
     end
     methods
-        function bw = segmentation(obj)
+        function bw = segmentation(obj) %Binary image segmentation (pixel connectivity)
             bw2 = obj.imFull;
             bw2(bw2<obj.avg)=obj.avg;
             bw2 = (bw2-min(bw2(:)))/(max(bw2(:))-min(bw2(:)))*255;
@@ -138,7 +138,7 @@ classdef PosFinder
             bw(bw <= obj.th) = 0;
             bw(bw > obj.th) = 1;
         end
-        function bwl = connectivity(obj)
+        function bwl = connectivity(obj) %Pixel connectivity function
              ss=obj.CamSize;
             
             bwt=uint16(obj.bw);
@@ -234,7 +234,7 @@ classdef PosFinder
 
 
         end
-        function bwll = elimination(obj)
+        function bwll = elimination(obj) %Elimination bad binary particle regions
             num = max(obj.bwl(:));
             bwll = zeros(obj.CamSize(1), obj.CamSize(2));
             n = 0;
@@ -248,7 +248,7 @@ classdef PosFinder
                 end
             end
         end
-        function [ xcent, ycent ] = centroid(obj, L1)
+        function [ xcent, ycent ] = centroid(obj, L1) %Centroid algorithm
             im1=obj.imFull.*L1;
 
             top1=sum(sum(im1.*obj.X));
@@ -258,7 +258,7 @@ classdef PosFinder
             xcent=top1/top3;
             ycent=top2/top3;
         end
-        function [cents, tA, tI, mask] = FindPos(obj)
+        function [cents, tA, tI, mask] = FindPos(obj) %Main function for finding positions
             tA = zeros(obj.partnum,1);
             tI = zeros(obj.partnum,1);
             cents = zeros(obj.partnum,2);
@@ -295,7 +295,7 @@ classdef PosFinder
                 [cents, mask] = obj.parRadial(cents, area, efarea);
             end
         end
-        function [dx, dy] = gradim(obj)
+        function [dx, dy] = gradim(obj) %Image gradient function
             gx=[1,1,0,-1,-1;
                 1,1,0,-1,-1;
                 1,1,0,-1,-1];
@@ -307,7 +307,7 @@ classdef PosFinder
             dx=conv2(obj.imFull/255,gx,'same');
             dy=conv2(obj.imFull/255,gy,'same');
         end
-        function [xc, yc] = radial(obj, L1)
+        function [xc, yc] = radial(obj, L1) %RSM algorithm
             w=sqrt(obj.dx.^2+obj.dy.^2);
             w=w.*L1;
             % theta=atan2(dy,dx);
@@ -330,7 +330,7 @@ classdef PosFinder
                 yc = NaN;
             end
         end
-        function [cents, mask] = parRadial(obj, cents, area, efarea)
+        function [cents, mask] = parRadial(obj, cents, area, efarea) %pRSM algorithm
             mask=0;
             if obj.Rout>0
                 if obj.partnum>1

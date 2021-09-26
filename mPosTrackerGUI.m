@@ -1,4 +1,4 @@
-% This code is written by Harun, 2018
+% This code is written by Harun, 2021
 classdef mPosTrackerGUI < handle
     properties
         Tracker
@@ -1489,7 +1489,7 @@ classdef mPosTrackerGUI < handle
                 draw();
             end
             function call_pix2mic(s,e)
-                    aa = str2double(get(Ei, 'string'));
+                    aa = str2double(get(pix2mic, 'string'));
                     conpar = app.Tracker.pix2mic;
                     if ~isnan(aa)
                         conpar = aa;
@@ -2519,14 +2519,14 @@ classdef mPosTrackerGUI < handle
                 set(objs, 'enable', 'off');
                 set(msg, 'enable', 'on');
                 set(d, 'pointer', 'watch');
-                pause(0.2);
+                pause(0.4);
 %                 app.Tracker.Classify();
                 app.Tracker.classdata = [];
                 i = 0;
                 while i < length(app.Tracker.FrameN)
                     i = i + 1;
                     set(msg, 'string', [num2str(i) 'th Frame, ' num2str(i/length(app.Tracker.FrameN)*100) '%']);
-                    pause(0.0001);
+                    pause(0.0002);
                     app.Tracker.TimeSeries(i);
                 end
                 set(msg, 'string', 'Tracking and Classification are completed!');
@@ -2751,7 +2751,7 @@ classdef mPosTrackerGUI < handle
                 uicontrol(p,'style','text','string', 'This is a project',...
                     'HorizontalAlignment'	, 'center','BackgroundColor', [1 1 1],...
                     'Units','char', 'Position', [0 2 35 1]);
-                uicontrol(p,'style','text','string', 'Copy - Right 2018',...
+                uicontrol(p,'style','text','string', 'Copy - Right 2021',...
                     'HorizontalAlignment'	, 'center','BackgroundColor', [1 1 1],...
                     'Units','char', 'Position', [0 1 35 1]);
 
@@ -2842,13 +2842,13 @@ classdef mPosTrackerGUI < handle
             end
             function init()
                 pos = get(app.SelectedObj, 'userdata');
-                x = app.Tracker.classdata(pos(1)).Par(pos(2)).Data;
+                x = app.Tracker.ClassDataMic(pos(1)).Par(pos(2)).Data;
                 v = app.Tracker.CalcVelocity(x);
                 
                 Exfilename = [ num2str(pos(1)) 'th_kind_'  num2str(pos(2)) 'th_Particle'];
                 set(tHead, 'string', Exfilename);
                 
-                set(table, 'ColumnName', {'Time','X (pixel)','Y (pixel)','A (pixel^2)', 'Average Displacement', 'Last Displacement' ,'Average Velocity', 'Instantaneous Velocity'});
+                set(table, 'ColumnName', {'Time (ms)','X (mic)','Y (mic)','A (mic^2)', 'Average Displacement', 'Last Displacement' ,'Average Velocity', 'Instantaneous Velocity'});
                 dd = [x,v];
                 set(table, 'data', dd);
             end
