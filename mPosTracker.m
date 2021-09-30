@@ -736,7 +736,7 @@ classdef mPosTracker < handle
                     nIdeal = ereaBin*rho;
                     gR.histo(bin) = gR.histo(bin) / nIdeal;
                 end
-.
+
                 gR.histo = 2*gR.histo/(nPart-1);
                 
         end
