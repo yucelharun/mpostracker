@@ -1,91 +1,92 @@
-% This code is written by Harun, 2018
+% This code is written by Harun, 2021
 classdef mPosTracker < handle
     properties
-        ProjectName = '';
-        save_project_path = '';
-        save_project_file = '';
-        save_project_l = 0;
-        recalculation_l = 0;
-        reclassification = 0;
+        ProjectName = ''; %Project name
+        save_project_path = ''; %Saved project path name
+        save_project_file = ''; %Saved project file name
+        save_project_l = 0; %Logical about saving project
+        recalculation_l = 0; %Logical about requiring recalculation
+        reclassification = 0; %Logical about reclassifying
         
-        coll = [[1 0 0]; [0 1 0]; [0 0 1]];
-        RecPar = [20, 20, 20];
-        current_index = 0;
-        vid_filename = '';
-        vid_pathname = '';
-        ColorMod = 0;
-        video = 0;
-        video_l = 0;
-        UserSize = [0, 0 ,0 ,0];
-        frame = 0;
-        invertedim = 0;
-        imFull = 0;
-        imFull_fft = 0;
-        CamSize = 0;
-        nFrame = 0;
-        FrameRate = 0;
-        Channel = 1;
+        coll = [[1 0 0]; [0 1 0]; [0 0 1]]; %Color codes RGB
+        RecPar = [20, 20, 20]; %Particle sing rectangle size
+        current_index = 0; %Current index of video frames
+        vid_filename = ''; %Video file name
+        vid_pathname = ''; %Video path name
+        ColorMod = 0; %Video color mode
+        video = 0; 
+        video_l = 0; %Logical about loading  a video
+        UserSize = [0, 0 ,0 ,0]; %resizing of frame
+        frame = 0; 
+        invertedim = 0; %Logical about inverted video frame
+        imFull = 0; %Last Readed frame
+        imFull_fft = 0; %FFT of last readed frame
+        CamSize = 0; %Frame size of video
+        nFrame = 0; %Total frame number
+        FrameRate = 0; %Frame rate
+        Channel = 1; %Color channel
         
-        Start_i = 1;
-        End_i = 0;
-        Step_i = 1;
-        TimeSer = 0;
-        FrameN = 0;
-        pix2mic = 1;
+        Start_i = 1; %Selected starting frame number
+        End_i = 0; %Selected ending frame number
+        Step_i = 1; %Selected step number
+        TimeSer = 0; %Time series
+        FrameN = 0; %Frame number series
+        pix2mic = 1; %Conversation parameter pixel to micron
        
-        FramePos
-        FramePos_l = 0;
-        CalcMethod = 1;
-        th = 128;
-        Rout = 0;
-        RedArea = 0;
+        FramePos %Class for PosTracker
+        FramePos_l = 0; %Logical
+        CalcMethod = 1; %Selected calculation method
+        th = 128; %Selected thereshol parameter
+        Rout = 0; %Selected Rout parameter for CalcMod = 3
+        RedArea = 0; %Ignored area size for side of frames
         
-        StepLength = 15;
-        GreenArea = 0;
-        BlueArea = 0;
-        AllowNewLabelGreen = 1;
-        AllowNewLabelBlue = 0;
+        StepLength = 15; %Maximum  travel length
+        GreenArea = 0; %Relabeling area size
+        BlueArea = 0; %Relabeling area size
+        AllowNewLabelGreen = 1; %Logical for relabeling
+        AllowNewLabelBlue = 0; %Logical for relabeling
         
         
-        centers = 0;
-        nelements = 0;
-        datatur = 0;
+        centers = 0; %Center coordinates
+        nelements = 0; % Distribution
+        datatur = 0; %Classification type parameter
         
-        fitt = 0;
-        fitpar = 0;
-        fit_l = 0;
+        fitt = 0; %Gaussian fiting
+        fitpar = 0; %Gaussian fiting
+        fit_l = 0; %Gaussian fitging
         
-        limits = [0,0;0,0;0,0];
-        tursay = 1;
-        turpar = 0;
+        limits = [0,0;0,0;0,0]; %Boundery parameters for classification
+        tursay = 1; %Type parameter
+        turpar = 0; %Type for classification presedure
         
-        LabelNum = 0;
-        ParSay = 0;
-        partnum = 0;
-        HamData = [];
-        classdata = [];
+        LabelNum = 0; %Label number
+        ParSay = 0; %Particles number
+        partnum = 0; %Total particle number
+        HamData = []; %Position data for not classifying results
+        classdata = []; %Position data for classifying results
+        ClassDataMic = []; %Calibrated Position data for classifying results
         
-        classdata_filename = '';
-        classdata_pathname = '';
-        hamdata_filename = '';
-        hamdata_pathname = '';
-        save_classdata_l = 0;
-        save_hamdata_l = 0;
+        classdata_filename = ''; %Classified data file name if saved
+        classdata_pathname = ''; %Classified data path name if saved
+        hamdata_filename = ''; %Not Classified data file name if saved
+        hamdata_pathname = ''; %Not Classified data path name if saved
+        save_classdata_l = 0; %Logical for saving classified data
+        save_hamdata_l = 0; %Logical for saving not classified data
         
-        panel_l = 0;
-        show_HamData = 0;
-        show_Num = 0;
-        show_borders = 0;
-        show_ident_trac = 0;
-        show_trajectories = 0;
-        show_labels = 0;
-        show_mask = 0;
+        panel_l = 0; %Logical for graphical results for commond line version
+        show_HamData = 0; %Logical for graphical results for commond line version
+        show_Num = 0; %Logical for graphical results for commond line version
+        show_borders = 0; %Logical for graphical results for commond line version
+        show_ident_trac = 0; %Logical for graphical results for commond line version
+        show_trajectories = 0; %Logical for graphical results for commond line version
+        show_labels = 0; %Logical for graphical results for commond line version
+        show_mask = 0; %Logical for graphical results for commond line version
     end
     methods 
-        function obj = mPosTracker()
+        function obj = mPosTracker() %Main function
             
         end
-        function addVideo(obj,  PathName, FileName)
+        function addVideo(obj,  PathName, FileName) %Loading a new video
             obj.vid_filename = FileName;
             obj.vid_pathname = PathName;
             obj.video = VideoReader([obj.vid_pathname obj.vid_filename]);
@@ -98,6 +99,7 @@ classdef mPosTracker < handle
             obj.partnum = 0;
             obj.HamData = [];
             obj.classdata = [];
+            obj.ClassDataMic = [];
             format = obj.video.videoFormat;
             switch format
                 case {'Mono8', 'Mono8 Signed', 'Mono16', 'Mono16 Signed'}
@@ -113,7 +115,7 @@ classdef mPosTracker < handle
             obj.UserSize = [1, obj.video.height, 1, obj.video.width];
             obj.setAreas();
         end
-        function setAreas(obj)
+        function setAreas(obj) %Setting user defined size for frames
             if floor(abs(obj.UserSize(1) - obj.UserSize(2)-1)*0.1) ...
              <= floor(abs(obj.UserSize(3) - obj.UserSize(4)-1)*0.1)
                 obj.RedArea = floor(abs(obj.UserSize(1) - obj.UserSize(2)-1)*0.1);
@@ -123,7 +125,7 @@ classdef mPosTracker < handle
             obj.GreenArea = floor(obj.RedArea*1.2);
             obj.BlueArea = floor(obj.RedArea*1.4);            
         end
-        function start(obj)
+        function start(obj) %Starting commond for finding positions for loop
             obj.Prepare;
             for i = 1:length(obj.FrameN)
                 obj.Calc(i);
@@ -133,25 +135,25 @@ classdef mPosTracker < handle
                 end
             end
         end
-        function Calc(obj,i)
+        function Calc(obj,i) %Main for finding position for loop
             obj.takeim(i);
             obj.FramePos = PosFinder(obj.imFull,obj.th,obj.RedArea,obj.CalcMethod,obj.Rout);
             obj.HamData(obj.current_index).Par = [obj.FramePos.dCent, obj.FramePos.tA, obj.FramePos.tI];
             obj.partnum(obj.current_index) = obj.FramePos.partnum;
         end
-        function Calc_Pos(obj,i)
+        function Calc_Pos(obj,i) %Main for finding position for GUI loop
             obj.takeim(i);
             obj.FramePos = PosFinder(obj.imFull,obj.th,obj.RedArea,obj.CalcMethod,obj.Rout);
         end
-        function Classify(obj)
-            obj.classdata = [];
+        function Classify(obj) %Classifying command
+            obj.classdata = []; obj.ClassDataMic = [];
             for i = 1:length(obj.FrameN)
 
                 obj.TimeSeries(i);
 
             end
         end
-        function Show_Results(obj)
+        function Show_Results(obj) %Show results for commond line version
             for i = 1:length(obj.FrameN)
                 if obj.panel_l == 1
                     obj.takeim(i);
@@ -159,7 +161,7 @@ classdef mPosTracker < handle
                 end
             end
         end
-        function Prepare(obj)
+        function Prepare(obj) %Prerape Time Series
             if obj.End_i == 0
                 obj.End_i = obj.nFrame;
             end
@@ -170,14 +172,14 @@ classdef mPosTracker < handle
             obj.FrameRate = obj.video.FrameRate;
             obj.TimeSer = obj.Step_i*(1/obj.FrameRate*1000)*(0:length(obj.FrameN)-1); %in milisecond
         end
-        function c = checkHamData(obj)
+        function c = checkHamData(obj) %Checking for having non classified data
             c = 0;
             num = numel(obj.HamData);
             if num == length(obj.FrameN)
                 c = 1;
             end
         end
-        function c = checkClassData(obj)
+        function c = checkClassData(obj) %Checking for having classified data
             c = 0;
             num = numel(obj.classdata);
             if num == obj.tursay
@@ -187,14 +189,14 @@ classdef mPosTracker < handle
                 end
             end
         end
-        function c = isexistvideo(obj)
+        function c = isexistvideo(obj) %Checking for having loaded video
             if obj.video_l == 0
                 c = 0;
             else
                 c = 1;
             end
         end
-        function saveHamData (obj, PathName, FileName)
+        function saveHamData (obj, PathName, FileName) %Saving for non classified data
             if obj.checkHamData == 1
                 if ischar(FileName)
                     d = obj.HamData;
@@ -205,7 +207,7 @@ classdef mPosTracker < handle
                 end
             end
         end
-        function saveClassData (obj,  PathName, FileName)
+        function saveClassData (obj,  PathName, FileName) %Saving for classified data
             if obj.checkClassData == 1
                 if ischar(FileName)
                     d = obj.classdata;
@@ -216,7 +218,7 @@ classdef mPosTracker < handle
                 end
             end
         end
-        function saveProject(obj, PathName, FileName)
+        function saveProject(obj, PathName, FileName) %Saving for project
             ss = struct(...
                         'A0',obj.current_index,...
                         'A1',obj.vid_filename,...
@@ -277,10 +279,11 @@ classdef mPosTracker < handle
                         'A56',obj.save_project_file,...
                         'A57',obj.recalculation_l,...
                         'A58',obj.reclassification,...
-                        'A59',obj.RecPar);
+                        'A59',obj.RecPar,...
+                        'A60',obj.ClassDataMic);
             save([PathName FileName], 'ss','-mat');
         end
-        function readProject(obj, PathName, FileName)
+        function readProject(obj, PathName, FileName) %Loading previously saved project
             ss = load([PathName FileName],'-mat');
             ss = ss.ss;
                     obj.current_index = ss.A0;
@@ -343,6 +346,7 @@ classdef mPosTracker < handle
                     obj.recalculation_l = ss.A57;
                     obj.reclassification = ss.A58;
                     obj.RecPar = ss.A59;
+                    obj.ClassDataMic = ss.A60;
             if exist([obj.vid_pathname obj.vid_filename], 'file') > 0
                 obj.video = VideoReader([obj.vid_pathname obj.vid_filename]);
                 obj.video_l = 1;
@@ -351,7 +355,7 @@ classdef mPosTracker < handle
             end
                     
         end
-        function TimeSeries(obj, tN) 
+        function TimeSeries(obj, tN) %Storing results
              if tN == 1
                 for i = 1 : obj.tursay
                     n(i) = 0;
@@ -424,12 +428,20 @@ classdef mPosTracker < handle
             end
             
             obj.classdata = Tur;
+            obj.ClassDataMic = Tur;
             obj.LabelNum = n;
+            
+            for k = 1 : obj.tursay
+                for k2 = 1 : numel(obj.classdata(k).Par)
+                    obj.ClassDataMic(k).Par(k2).Data = obj.classdata(k).Par(k2).Data*obj.pix2mic;
+                end
+            end
+            
         end
-        function Disp_Time(obj,n,maxn)
+        function Disp_Time(obj,n,maxn) %Displaying time
             disp([num2str(n) 'th Frame, ' num2str(n/maxn*100) '%, Elapsed time is ' num2str(obj.FramePos.caltime)]);
         end
-        function Show_Panel(obj, n, maxn)
+        function Show_Panel(obj, n, maxn) %Showing panel for graphical results
             if obj.show_mask == 1
                 image(obj.imFull+obj.FramePos.mask*50), colormap(gray(256))
             else
@@ -474,7 +486,7 @@ classdef mPosTracker < handle
             hold off
             drawnow;
         end
-        function traindex = bul(obj, x2, y2, tur)
+        function traindex = bul(obj, x2, y2, tur) %Storing results
             partN = numel(obj.classdata(tur).Par);
             traindex = 0;
             for i = 1 : partN
@@ -486,7 +498,7 @@ classdef mPosTracker < handle
                 end
              end
         end
-        function turindex = identpar(obj,tN,k)
+        function turindex = identpar(obj,tN,k) %Storing results
             turindex = 0;
             switch obj.turpar
                 case 0
@@ -506,7 +518,7 @@ classdef mPosTracker < handle
                 end
             end
         end
-        function takeim(obj,i)
+        function takeim(obj,i) %Reading image from video frame
             obj.current_index = i;
             obj.frame = read(obj.video,obj.FrameN(obj.current_index));
             ss = size(obj.frame);
@@ -532,7 +544,7 @@ classdef mPosTracker < handle
             obj.imFull = im;
             obj.CamSize = size(im);
         end
-        function takeim_fft(obj,i)
+        function takeim_fft(obj,i) %Reading image from video frame for FFT
             obj.current_index = i;
             obj.frame = read(obj.video,obj.FrameN(obj.current_index));
             ss = size(obj.frame);
@@ -564,7 +576,7 @@ classdef mPosTracker < handle
             obj.imFull_fft = (m-min(m(:)))/(max(m(:))-min(m(:)))*255;
                 
         end
-        function distributions(obj)
+        function distributions(obj) %Obtaining the distribution for classifying
             
             PosData = [];
             if obj.checkHamData() == 1
@@ -588,7 +600,7 @@ classdef mPosTracker < handle
             
             
         end
-        function FitLimits(obj)
+        function FitLimits(obj) %Fitting for the distribution
             s = 4;  
             obj.fit_l = 0;
             switch obj.tursay
@@ -625,7 +637,7 @@ classdef mPosTracker < handle
             end
 
         end
-        function show_limits(obj)
+        function show_limits(obj) %showing limits values for command line
             ss = size(obj.fitt);
             if ss(2) ==  2
                 plot(obj.fitt(:,1), obj.fitt(:,2),'-r')
@@ -642,12 +654,13 @@ classdef mPosTracker < handle
             end
             hold off
         end
-        function recalculation(obj)
+        function recalculation(obj) %Prepare for recalculation
             obj.classdata = [];
+            obj.ClassDataMic = [];
             obj.HamData = [];
             obj.ParSay = [];
         end
-        function CalcRecPar(obj)
+        function CalcRecPar(obj) %Calcultion for RecPar parameter
             if obj.checkClassData()
                 obj.RecPar = zeros(obj.tursay,1);
                 
@@ -669,7 +682,7 @@ classdef mPosTracker < handle
                 obj.RecPar = [20, 20, 20];
             end
         end
-        function gR = CalcGR(obj, data)
+        function gR = CalcGR(obj, data) %Calculation for gr function
             coords = data';
             Lx = obj.CamSize(2);
             Ly = obj.CamSize(1);
@@ -687,8 +700,7 @@ classdef mPosTracker < handle
                 
             for partA = 1:(nPart-1)
                 for partB = (partA+1):nPart
-                    % Calculate particle-particle distance
-                    % Account for PBC (assuming 2D)                               
+                             
                     vec = coords(:,partA) - coords(:,partB); 
                     hLx = Lx/2.0;
                     hLy = Ly/2.0;
@@ -704,10 +716,9 @@ classdef mPosTracker < handle
                     elseif vec(2) < -hLy
                         vec(2) = vec(2) + Ly;
                     end
-                    % Get the size of this distance vector
                     r = sqrt(sum(dot(vec,vec)));
 
-                    % Add to g(r) if r is in the right range [0 0.3*L]
+ 
                     if (r < 0.3*L)
                         gR = obj.addPoint(gR,r);
                     end
@@ -716,57 +727,40 @@ classdef mPosTracker < handle
             
                 nBins = size(gR.values,2);
                 nPart = size(coords,2);
-                rho = nPart/(Lx*Ly); % Density of the particles
+                rho = nPart/(Lx*Ly); 
                 
                 for bin = 1:nBins
-                    % rVal is the number of cells in some layer of area 
-                    % da(r)=2 pi * r * dr, a distance r from the central cell
                     rVal = gR.values(bin);
                     next_rVal = gR.increment + rVal;
-                    % Calculate the area of the bin (a ring of radii r,
-                    % r+dr)
                     ereaBin = pi*next_rVal^2 - pi*rVal^2; 
-                    % Calculate the number of particles expected in this bin in
-                    % the ideal case
                     nIdeal = ereaBin*rho;
-                    % Normalize the bin
                     gR.histo(bin) = gR.histo(bin) / nIdeal;
                 end
-                
-                % The radial distribution function should be normalized.
+.
                 gR.histo = 2*gR.histo/(nPart-1);
                 
         end
-        function h = addPoint(obj, h, data)
+        function h = addPoint(obj, h, data) %Subfunction for gr calculation
 
-            % If this is the first time this histogram is being accessed,
-            % initialize all the properties of this instacne
+
 
             if (h.count == 0)
-                % Determine the number of bins by evaluating the histogram''s range and increment size
                 nBins = ceil((h.range(2)-h.range(1))/h.increment);
 
-                % Adjust the histogram''s range
-                % Useful if the total range is not an exact multiple of the increment size
                 h.range(2) = h.range(1) + nBins * h.increment;
 
-                % Set all bins to zero
                 h.histo = zeros(1,nBins);
 
-                % Set the values vector to be in the center of each bin
                 h.values = 1:nBins;
                 h.values = h.range(1) + h.increment*(h.values-0.5);
             end
-            % Now that the histogram is initialized, add the data in the right bin
-            if (data > h.range(1) && data <= h.range(2)) % Make sure the data fits the range
 
-                % Find the right bin position
+            if (data > h.range(1) && data <= h.range(2))
+
                 binIndex = ceil((data-h.range(1))/h.increment);
 
-                % Add 1 to the bin
                 h.histo(binIndex) = h.histo(binIndex)+1;
 
-                % Increment the count by 1
                 h.count = h.count+1;
 
             else
@@ -774,7 +768,7 @@ classdef mPosTracker < handle
             end
 
         end
-        function v = CalcVelocity(obj, data)
+        function v = CalcVelocity(obj, data) %Calculation for velocities
             v = [];
             findfirst = 0;
             if ~isempty(data)
@@ -808,7 +802,7 @@ classdef mPosTracker < handle
                 end
             end
         end
-        function PlotTrajectory(obj,k,k2, index)
+        function PlotTrajectory(obj,k,k2, index) %Plotting trajectory for single particle
 
             xx = obj.classdata(k).Par(k2).Data(1:index,2);
             yy = obj.classdata(k).Par(k2).Data(1:index,3);
@@ -874,13 +868,14 @@ classdef mPosTracker < handle
                     'FontName','Times')
                 
         end
-        function PlotMSD(obj,k,k2)
+        function PlotMSD(obj,k,k2) %Ploting MSD calculation
 
             xx = obj.classdata(k).Par(k2).Data(1:end,2);
             yy = obj.classdata(k).Par(k2).Data(1:end,3);
             
-%             x=x*obj.pix2mic;
-%             y=y*obj.pix2mic;
+            xx = xx*obj.pix2mic;
+            yy = yy*obj.pix2mic;
+
             x = [];
             y = [];
             r = [];
@@ -899,20 +894,29 @@ classdef mPosTracker < handle
             dt = t_meas / ( n - 1 );
 
             for i = 1:n/2
-                MSDx(i) =mean((x(i+1:1:end)-x(1:1:end-i)).^2);
-                MSDy(i) =mean((y(i+1:1:end)-y(1:1:end-i)).^2);
-                MSDr(i) =mean((r(i+1:1:end)-r(1:1:end-i)).^2);
-                Zn(i)=i*dt;
+                MSDx(i) = mean((x(i+1:1:end)-x(1:1:end-i)).^2);
+                MSDy(i) = mean((y(i+1:1:end)-y(1:1:end-i)).^2);
+                MSDr(i) = mean((r(i+1:1:end)-r(1:1:end-i)).^2);
+                Zn(i) = i*dt;
             end
+            
+            
+            
+            
+            
+            
+            
+            
+            
             
             
 
            ff = figure;
            axx = axes(ff);
            
-            loglog(Zn,MSDx,'-r','LineWidth'   ,0.5)
-            hold on
-            loglog(Zn,MSDy,'-b','LineWidth'   ,0.5)
+%             loglog(Zn,MSDx,'-r','LineWidth'   ,0.5)
+%             hold on
+%             loglog(Zn,MSDy,'-b','LineWidth'   ,0.5)
             loglog(Zn,MSDr,'-k','LineWidth'   ,1.5)
 
             set(axx,...
@@ -940,19 +944,19 @@ classdef mPosTracker < handle
                 'FontSize',12,...
                 'FontName','Times')
 
-            ylabel({'MSD (pixels^2)'},...
+            ylabel({'MSD (\mum^2)'},...
                     'FontUnits','points',...
                     'FontWeight','normal',...
                     'FontSize',12,...
                     'FontName','Times')
-            xlabel('Time (seconds)',...
+            xlabel('Time (ms)',...
                     'FontUnits','points',...
                     'FontWeight','normal',...
                     'FontSize',12,...
                     'FontName','Times')
 
 
-            legend({'X direction','Y direction','Displacement'},...%'FontUnits','points',...
+            legend({'Displacement'},...%'FontUnits','points',...
                 'FontWeight','normal',...
                 'FontSize',12,...
                 'FontName','Times',...
